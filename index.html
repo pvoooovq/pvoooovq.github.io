@@ -20,7 +20,7 @@
 <body>
   <h2>문의하기</h2>
 
-  <!-- 숨김: 편집 대상 id -->
+  <!-- 편집 대상 id -->
   <input type="hidden" id="recordId" />
 
   <div class="row">
@@ -47,12 +47,11 @@
   <ul id="dataList"></ul>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwoJVb_RkYzvVpbK-9ygsxQijlLB2Ywa8WBJ-7shcqmqsr5yvZZpwHE5gdaEEBnnz4SJA/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxleObVAB8ojj6QPPEeb-wG4vFvWg3MU3ks0aSFXT99LBlYpihTeY7qY1wgfHkTtrvT9Q/exec"; // 예) https://script.google.com/macros/s/XXXX/exec
 
-    // 상태
     let editMode = false; // false: create, true: update
 
-    // 유틸: 폼 값 가져오기/설정/초기화
+    // 유틸
     function getForm() {
       return {
         id: document.getElementById('recordId').value.trim(),
@@ -87,7 +86,7 @@
       }
     }
 
-    // 목록 렌더링
+    // 목록 로드
     async function loadList() {
       const res = await fetch(API_URL);
       const json = await res.json();
@@ -95,16 +94,14 @@
       const list = document.getElementById('dataList');
       list.innerHTML = "";
 
-      // 최신이 위로 오게 정렬(선택사항)
+      // 최신이 위로
       data.sort((a, b) => Number(b.id) - Number(a.id));
 
       data.forEach(item => {
         const li = document.createElement('li');
-        // 클릭 시 편집 모드로 전환 + 폼 채움
         li.addEventListener('click', () => {
           setForm({ id: String(item.id), name: item.name ?? "", email: item.email ?? "", message: item.message ?? "" });
           setModeUpdate(true, `${item.name}`);
-          // 포커스 이동
           document.getElementById('name').focus();
         });
         li.innerHTML = `
@@ -116,7 +113,7 @@
       });
     }
 
-    // 저장/수정 클릭
+    // 저장/수정
     document.getElementById('submitBtn').addEventListener('click', async (e) => {
       e.preventDefault();
       const form = getForm();
@@ -135,7 +132,7 @@
 
       const res = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        // 헤더를 생략하면 text/plain으로 보내져서 프리플라이트를 피하기 쉬움
         body: JSON.stringify(payload)
       });
       const result = await res.json();
@@ -144,20 +141,20 @@
         return;
       }
 
-      // 성공 시: 폼 비우고, 모드 초기화, 목록 새로고침
+      // 성공 시 초기화 + 목록 갱신
       clearForm();
       setModeUpdate(false);
       await loadList();
     });
 
-    // 초기화 버튼
+    // 초기화
     document.getElementById('resetBtn').addEventListener('click', (e) => {
       e.preventDefault();
       clearForm();
       setModeUpdate(false);
     });
 
-    // 삭제 버튼 (편집 모드에서만 노출)
+    // 삭제 (편집 모드에서만)
     document.getElementById('deleteBtn').addEventListener('click', async (e) => {
       e.preventDefault();
       const { id, name } = getForm();
@@ -166,7 +163,6 @@
 
       const res = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "delete", id })
       });
       const result = await res.json();
@@ -175,13 +171,12 @@
         return;
       }
 
-      // 삭제 후 초기화 + 목록 갱신
       clearForm();
       setModeUpdate(false);
       await loadList();
     });
 
-    // XSS 방지용 간단 이스케이프
+    // XSS 방지용
     function escapeHTML(str) {
       return String(str)
         .replaceAll("&", "&amp;")
@@ -191,7 +186,7 @@
         .replaceAll("'", "&#39;");
     }
 
-    // 최초 로드
+    // 첫 로드
     loadList();
   </script>
 </body>
