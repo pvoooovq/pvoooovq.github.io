@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>시트 선택</title>
+  <style>
+    body { font-family:sans-serif; max-width:600px; margin:40px auto; }
+    select { min-width:200px; padding:5px; }
+    #loading { margin:10px 0; color:#666; display:none; }
+  </style>
+</head>
+<body>
+  <h2>시트 선택</h2>
+  <div id="loading">불러오는 중...</div>
+  <select id="sheetSelect">
+    <option>시트 목록을 불러오는 중...</option>
+  </select>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbz9mJIzCRIcr9qzHukuPyWQWi94K6J6ACWR7Z9dc_clpgOmsq3PVfk8jUPHA5oboQiw2w/exec";
+
+    async function loadSheets() {
+      const loading = document.getElementById("loading");
+      const select = document.getElementById("sheetSelect");
+      loading.style.display = "block";
+
+      try {
+        const res = await fetch(API_URL + "?meta=sheets");
+        const json = await res.json();
+        select.innerHTML = "";
+
+        if (json.ok && json.sheets.length > 0) {
+          const placeholder = document.createElement("option");
+          placeholder.text = "시트를 선택하세요";
+          placeholder.disabled = true;
+          placeholder.selected = true;
+          select.appendChild(placeholder);
+
+          json.sheets.forEach(name => {
+            const opt = document.createElement("option");
+            opt.value = name;
+            opt.text = name;
+            select.appendChild(opt);
+          });
+        } else {
+          const opt = document.createElement("option");
+          opt.text = "시트 없음";
+          opt.disabled = true;
+          opt.selected = true;
+          select.appendChild(opt);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("시트 목록 불러오기 실패");
+      } finally {
+        loading.style.display = "none";
+      }
+    }
+
+    document.getElementById("sheetSelect").addEventListener("change", e => {
+      const sheetName = e.target.value;
+      console.log("선택된 시트:", sheetName);
+      // 여기서 선택된 시트 이름으로 데이터 불러오기 가능
+    });
+
+    loadSheets();
+  </script>
+</body>
+</html>
