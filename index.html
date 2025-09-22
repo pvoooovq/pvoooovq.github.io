@@ -41,14 +41,42 @@
       const data = await res.json();
       const list = document.getElementById("dataList");
       list.innerHTML = "";
+
       data.forEach(item => {
         const li = document.createElement("li");
-        li.textContent = `${item.name} - ${item.email}: ${item.message}`;
+        li.innerHTML = `
+          ${item.name} - ${item.email}: ${item.message}
+          <button onclick="editData(${item.id}, '${item.name}', '${item.email}', '${item.message}')">수정</button>
+          <button onclick="deleteData(${item.id})">삭제</button>
+        `;
         list.appendChild(li);
       });
     }
 
-    // 처음 로드 시 데이터 불러오기
+    // 수정 요청
+    async function editData(id, name, email, message) {
+      const newName = prompt("이름 수정:", name);
+      const newEmail = prompt("이메일 수정:", email);
+      const newMessage = prompt("메시지 수정:", message);
+      
+      if (newName && newEmail && newMessage) {
+        await fetch(API_URL, {
+          method: "PUT",
+          body: JSON.stringify({ id, name: newName, email: newEmail, message: newMessage })
+        });
+        loadData();
+      }
+    }
+
+    // 삭제 요청
+    async function deleteData(id) {
+      if (confirm("정말 삭제할까요?")) {
+        await fetch(API_URL + "?id=" + id, { method: "DELETE" });
+        loadData();
+      }
+    }
+
+    // 초기 로드
     loadData();
   </script>
 </body>
