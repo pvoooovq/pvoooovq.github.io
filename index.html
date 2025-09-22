@@ -1,11 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>웹 호스팅</title>
+  <meta charset="UTF-8">
+  <title>Google Sheets Form</title>
 </head>
 <body>
-    git pages 입니다.
+  <h2>문의하기</h2>
+  <form id="myForm">
+    이름: <input type="text" name="name"><br>
+    이메일: <input type="email" name="email"><br>
+    메시지: <textarea name="message"></textarea><br>
+    <button type="submit">보내기</button>
+  </form>
+
+  <h3>저장된 데이터</h3>
+  <ul id="dataList"></ul>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyPgZqCt2UQVHCbE7Ht2v09kEmw1-rFCXSndYeirJR0ZgmjCLiiCkomP8l5pdEsV_y8JA/exec";
+
+    // 데이터 전송
+    document.getElementById("myForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = {
+        name: e.target.name.value,
+        email: e.target.email.value,
+        message: e.target.message.value
+      };
+      await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify(formData)
+      });
+      alert("저장 완료!");
+      loadData();
+    });
+
+    // 데이터 불러오기
+    async function loadData() {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const list = document.getElementById("dataList");
+      list.innerHTML = "";
+      data.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = `${item.name} - ${item.email}: ${item.message}`;
+        list.appendChild(li);
+      });
+    }
+
+    // 처음 로드 시 데이터 불러오기
+    loadData();
+  </script>
 </body>
 </html>
